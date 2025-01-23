@@ -1,23 +1,37 @@
 ﻿@page "/"
+@using UserManagementApp.Services
+@inject AuthenticationService AuthService
 @inject NavigationManager Navigation
 
 <h3>Добро пожаловать!</h3>
 
-@if (IsAdmin)
+@if (IsAuthenticated)
 {
-    <a href="/users">Управление пользователями</a>
+    if (IsAdmin)
+    {
+        <a href="/users">Управление пользователями</a>
+    }
+    else
+    {
+        <p>Вы вошли как обычный пользователь.</p>
+    }
 }
 else
 {
-    <p>Вы вошли как обычный пользователь.</p>
+    <p>Вы не авторизованы. <a href="/login">Войти</a></p>
 }
 
 @code {
-    private bool IsAdmin = false; // Здесь должна быть логика проверки роли
+    private bool IsAuthenticated = false;
+    private bool IsAdmin = false;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        // Пример проверки роли (замените на реальную логику)
-        IsAdmin = true; // Временно установлено true для тестирования
+        IsAuthenticated = await AuthService.IsAuthenticated();
+        if (IsAuthenticated)
+        {
+            var role = await AuthService.GetUserRole();
+            IsAdmin = role == "Admin";
+        }
     }
 }

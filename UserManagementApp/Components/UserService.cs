@@ -1,7 +1,11 @@
-﻿using System.Net.Http.Json;
+﻿using Amazon.IdentityManagement.Model;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using UserManagementApp.Models;
 
-namespace UserManagementApp.Services
+namespace UserManagementApp.Components
 {
     public class UserService
     {
@@ -25,9 +29,9 @@ namespace UserManagementApp.Services
             return await response.Content.ReadAsStringAsync();
         }
 
-        public async Task<List<User>> GetAllUsersAsync()
+        public async Task<List<Models.User>> GetAllUsersAsync()
         {
-            return await _httpClient.GetFromJsonAsync<List<User>>("api/users/all");
+            return await _httpClient.GetFromJsonAsync<List<Models.User>>("api/users/all");
         }
 
         public async Task<string> DeleteUserAsync(int id)
@@ -36,5 +40,6 @@ namespace UserManagementApp.Services
             return await response.Content.ReadAsStringAsync();
         }
     }
+
 }
 
