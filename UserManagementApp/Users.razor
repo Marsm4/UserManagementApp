@@ -1,0 +1,58 @@
+﻿@page "/users"
+@inject AdminService AdminService
+@inject NavigationManager NavigationManager
+
+<h3>Users List</h3>
+
+@if (users == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in users)
+            {
+                <tr>
+                    <td>@user.Name</td>
+                    <td>@user.Email</td>
+                    <td>
+                        <button @onclick="() => EditUser(user.Id)">Edit</button>
+                        <button @onclick="() => DeleteUser(user.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IEnumerable<User> users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await AdminService.GetAllUsersAsync();
+    }
+
+    private async Task DeleteUser(int id)
+    {
+        var success = await AdminService.DeleteUserAsync(id);
+        if (success)
+        {
+            users = await AdminService.GetAllUsersAsync();  // Refresh the list
+        }
+    }
+
+    private void EditUser(int id)
+    {
+        NavigationManager.NavigateTo($"/edituser/{id}");
+    }
+}

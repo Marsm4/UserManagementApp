@@ -1,0 +1,47 @@
+﻿@page "/login"
+@using Microsoft.AspNetCore.Components.Forms
+@inject AdminService AdminService
+@inject NavigationManager NavigationManager
+
+<h3>Admin Login</h3>
+
+<EditForm Model="adminLogin" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Email:</label>
+        <InputText @bind="adminLogin.Email" />
+    </div>
+    <div>
+        <label>Password:</label>
+        <InputText @bind="adminLogin.Password" type="password" />
+    </div>
+    <button type="submit">Login</button>
+</EditForm>
+
+@if (errorMessage != null)
+{
+    <p style="color:red">@errorMessage</p>
+}
+
+@code {
+    private AdminLogin adminLogin = new AdminLogin();
+    private string? errorMessage;
+
+    private async Task HandleLogin()
+    {
+        var success = await AdminService.LoginAsync(adminLogin);
+        if (success)
+        {
+            NavigationManager.NavigateTo("/users");
+        }
+        else
+        {
+            errorMessage = "Invalid login credentials.";
+        }
+    }
+}
+}
+}
+}

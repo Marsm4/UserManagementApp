@@ -1,81 +1,34 @@
-using Amazon.OpsWorks.Model;
-using Blazored.LocalStorage;
-using System.Net.Http;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
-using UserManagementApp.Services;
-using JWT;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
+п»їusing Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components;
+using MyBlazorApp.Data;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddBlazoredLocalStorage();
-builder.Services.AddScoped<AuthenticationService>();
 
-// Отключение проверки SSL (только для разработки)
-builder.Services.AddHttpClient("UnsafeHttpClient")
-    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
-    {
-        ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
-    });
+// Р РµРіРёСЃС‚СЂРёСЂСѓРµРј HTTP-РєР»РёРµРЅС‚ РґР»СЏ РѕР±СЂР°С‰РµРЅРёСЏ Рє API
+builder.Services.AddScoped<HttpClient>(sp => new HttpClient { BaseAddress = new Uri("https://localhost:5001/api/") });
 
-// Регистрация UserService с использованием HttpClient
-builder.Services.AddScoped<UserService>(sp =>
-{
-    var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("UnsafeHttpClient");
-    httpClient.BaseAddress = new Uri("https://localhost:7253"); // Убедись, что адрес совпадает с API
-    return new UserService(httpClient);
-});
+// Р РµРіРёСЃС‚СЂРёСЂСѓРµРј СЃРµСЂРІРёСЃС‹
+builder.Services.AddScoped<AdminService>();
 
-// Добавление сервисов Razor Components
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+// РќР°СЃС‚СЂРѕРёРј Blazor WebAssembly РёР»Рё Blazor Server
+builder.Services.AddRazorComponents(); // Р­С‚Рѕ РЅСѓР¶РЅРѕ С‚РѕР»СЊРєРѕ РґР»СЏ Blazor Server, РґР»СЏ Blazor WebAssembly СЌС‚Рѕ РЅРµ С‚СЂРµР±СѓРµС‚СЃСЏ
 
+builder.Services.AddAuthorizationCore(); // Р•СЃР»Рё РёСЃРїРѕР»СЊР·СѓРµС‚Рµ Р°РІС‚РѕСЂРёР·Р°С†РёСЋ
 
-var jwtIssuer = builder.Configuration["Jwt:Issuer"];
-var jwtAudience = builder.Configuration["Jwt:Audience"];
-var jwtKey = builder.Configuration["Jwt:Key"];
-
-if (string.IsNullOrEmpty(jwtIssuer) || string.IsNullOrEmpty(jwtAudience) || string.IsNullOrEmpty(jwtKey))
-{
-    throw new ArgumentNullException("JWT configuration values are missing from appsettings.json");
-}
-
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidIssuer = jwtIssuer,
-            ValidAudience = jwtAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
-        };
-    });
-
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
-});
-
+builder.Services.AddControllers(); // Р”Р»СЏ API РєРѕРЅС‚СЂРѕР»Р»РµСЂРѕРІ, РµСЃР»Рё РЅСѓР¶РЅС‹
 
 var app = builder.Build();
 
-// Настройка конвейера запросов
-if (!app.Environment.IsDevelopment())
+// РќР°СЃС‚СЂРѕР№РєР° РїСЂРёР»РѕР¶РµРЅРёСЏ
+if (app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    app.UseHsts();
+    app.UseDeveloperExceptionPage();
 }
 
-app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseAntiforgery();
 
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+app.MapBlazorHub(); // Р”Р»СЏ Blazor Server
+app.MapFallbackToPage("/_Host");
 
 app.Run();

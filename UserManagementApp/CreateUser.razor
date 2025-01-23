@@ -1,0 +1,53 @@
+﻿@page "/create-user"
+@using Microsoft.AspNetCore.Components.Forms
+@inject AdminService AdminService
+@inject NavigationManager NavigationManager
+
+<h3>Create New User</h3>
+
+<EditForm Model="newUser" OnValidSubmit="HandleCreateUser">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label>Name:</label>
+        <InputText @bind="newUser.Name" />
+    </div>
+    <div>
+        <label>Email:</label>
+        <InputText @bind="newUser.Email" />
+    </div>
+    <div>
+        <label>Password:</label>
+        <InputText @bind="newUser.Password" type="password" />
+    </div>
+    <div>
+        <button type="submit">Create User</button>
+    </div>
+</EditForm>
+
+@if (errorMessage != null)
+{
+    <p style="color:red">@errorMessage</p>
+}
+
+@code {
+    private NewUser newUser = new NewUser();
+    private string? errorMessage;
+
+    private async Task HandleCreateUser()
+    {
+        var success = await AdminService.CreateUserAsync(newUser);
+        if (success)
+        {
+            NavigationManager.NavigateTo("/users");
+        }
+        else
+        {
+            errorMessage = "Error creating user.";
+        }
+    }
+}
+}
+}
+}

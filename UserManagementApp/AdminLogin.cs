@@ -1,6 +1,6 @@
-﻿namespace UserManagementApp.Models
+﻿namespace MyBlazorApp.Models
 {
-    public class LoginDto
+    public class AdminLogin
     {
         public string Email { get; set; }
         public string Password { get; set; }
