@@ -1,0 +1,38 @@
+﻿@page "/register"
+@using UserManagementApp.Models
+@using UserManagementApp.Services
+@inject UserService UserService
+@inject NavigationManager Navigation
+
+<h3>Регистрация</h3>
+
+<EditForm Model="@RegisterUser" OnValidSubmit="HandleRegister">
+    <InputText @bind-Value="RegisterUser.Email" placeholder="Email" />
+    <InputText @bind-Value="RegisterUser.Name" placeholder="Имя" />
+    <InputText @bind-Value="RegisterUser.Description" placeholder="Описание" />
+    <InputText @bind-Value="RegisterUser.Password" placeholder="Пароль" type="password" />
+    <button type="submit">Зарегистрироваться</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <p class="text-danger">@ErrorMessage</p>
+}
+
+@code {
+    private RegisterUserDto RegisterUser = new();
+    private string ErrorMessage;
+
+    private async Task HandleRegister()
+    {
+        try
+        {
+            var result = await UserService.RegisterUserAsync(RegisterUser);
+            Navigation.NavigateTo("/login");
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Ошибка регистрации. Проверьте введенные данные.";
+        }
+    }
+}

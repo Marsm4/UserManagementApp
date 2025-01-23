@@ -1,0 +1,36 @@
+﻿@page "/login"
+@using UserManagementApp.Models
+@using UserManagementApp.Services
+@inject UserService UserService
+@inject NavigationManager Navigation
+
+<h3>Вход</h3>
+
+<EditForm Model="@LoginUser" OnValidSubmit="HandleLogin">
+    <InputText @bind-Value="LoginUser.Email" placeholder="Email" />
+    <InputText @bind-Value="LoginUser.Password" placeholder="Пароль" type="password" />
+    <button type="submit">Войти</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(ErrorMessage))
+{
+    <p class="text-danger">@ErrorMessage</p>
+}
+
+@code {
+    private LoginDto LoginUser = new();
+    private string ErrorMessage;
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            var result = await UserService.LoginAsync(LoginUser);
+            Navigation.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = "Ошибка входа. Проверьте email и пароль.";
+        }
+    }
+}
