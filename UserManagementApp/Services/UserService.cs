@@ -11,13 +11,20 @@ namespace UserManagementApp.Services
         {
             _httpClient = httpClient;
         }
-
-        // Регистрация пользователя
         public async Task<string> RegisterUserAsync(RegisterUserDto userDto)
         {
-            var response = await _httpClient.PostAsJsonAsync("api/users/register", userDto);
-            return await response.Content.ReadAsStringAsync();
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("api/users/register", userDto);
+                response.EnsureSuccessStatusCode(); // Проверка на успешный статус
+                return await response.Content.ReadAsStringAsync();
+            }
+            catch (HttpRequestException ex)
+            {
+                return $"Ошибка: {ex.Message}";
+            }
         }
+    
 
         // Авторизация пользователя
         public async Task<string> LoginAsync(LoginDto loginDto)
